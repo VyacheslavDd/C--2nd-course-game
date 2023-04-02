@@ -1,2 +1,2 @@
-# C--2nd-course-game
+# C#-2nd-course-game
 2D-игра, сделанная с помощью Monogame на языке  программирования C#
