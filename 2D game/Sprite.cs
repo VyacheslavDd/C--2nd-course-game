@@ -16,7 +16,7 @@ public class Sprite : Component
 
     public Rectangle Rectangle
     {
-        get { return new Rectangle((int)Position.X, (int)Position.Y, texture.Width, texture.Height); }
+        get { return new Rectangle((int)Position.X, (int)Position.Y, (int)(texture.Width * Scale.X), (int)(texture.Height * Scale.Y)); }
     }
 
     public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
@@ -24,12 +24,12 @@ public class Sprite : Component
         spriteBatch.Draw(texture, Position, Color.White);
     }
 
-    public Sprite(Texture2D texture)
+    public Sprite(Texture2D texture, Vector2 position, Vector2 scale, SpriteEffects effect)
     {
         this.texture = texture;
-        Position = Vector2.Zero;
-        Scale = Vector2.One;
-        Effect = SpriteEffects.None;
+        Position = position;
+        Scale = scale;
+        Effect = effect;
     }
 
     public override void Update(GameTime gameTime)
