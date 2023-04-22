@@ -10,8 +10,9 @@ namespace _2D_game
 {
     public class USE_Game : Game
     {
-        public static int ScreenWidth;
-        public static int ScreenHeight;
+        public static int ScreenWidth { get; set; }
+        public static int ScreenHeight { get; set; }
+        public static Vector2 ActualCenterOfGameWorld { get; set; }
 
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
@@ -32,14 +33,16 @@ namespace _2D_game
         private Texture2D horizontal_wall;
         private Texture2D vertical_wall;
 
+        private SpriteFont standardFont;
+
         private MainCamera camera;
         private MainPlayer player;
         private Controller controller;
+        private Timer timer;
 
         private List<Component> colliders;
         private List<Component> pupilsAndTeachers;
         private List<Component> gameComponents;
-
         private List<Component> gameComponentsToUpdate;
 
         public USE_Game()
@@ -57,7 +60,7 @@ namespace _2D_game
 
             ScreenWidth = _graphics.PreferredBackBufferWidth;
             ScreenHeight = _graphics.PreferredBackBufferHeight;
-
+            ActualCenterOfGameWorld = Vector2.Zero;
             Window.Title = "IT Specialist Game";
 
             base.Initialize();
@@ -87,6 +90,7 @@ namespace _2D_game
 
         private void LoadFonts()
         {
+            standardFont = Content.Load<SpriteFont>("serviceText");
         }
 
         private void CreateObjects()
@@ -94,6 +98,8 @@ namespace _2D_game
             camera = new MainCamera();
             player = new MainPlayer(mainCharacterSprite, 200f, new Vector2(160, 40), new Vector2(0.7f, 0.7f));
             controller = new Controller(player);
+            timer = new Timer(null, new Vector2(150, 150), new Vector2(3, 3), SpriteEffects.None,
+                standardFont, Color.BlueViolet, 10);
 
             CreateAdditionalCharacters();
         }
@@ -164,12 +170,16 @@ namespace _2D_game
         {
             gameComponents = new List<Component>()
             {
-                new Sprite(background, Vector2.Zero, Vector2.One, SpriteEffects.None),
-                new Sprite(map, Vector2.Zero, Vector2.One, SpriteEffects.None),
-                player
+                new Sprite(background, Vector2.Zero, Vector2.One, SpriteEffects.None, false),
+                new Sprite(map, Vector2.Zero, Vector2.One, SpriteEffects.None, false),
+                player,
             };
         }
 
+        private void AddUI()
+        {
+            gameComponents.Add(timer);
+        }
 
         protected override void LoadContent()
         {
@@ -185,16 +195,20 @@ namespace _2D_game
             AddGameComponents();
 
             gameComponents.AddRange(pupilsAndTeachers);
+            AddUI();
 
             player.LoadColliders(colliders.Union(pupilsAndTeachers).ToList());
 
             gameComponentsToUpdate = gameComponents
-                .Where(comp => comp.GetType() != typeof(Sprite))
-                .ToList();
+                .Where(comp => { var sprite = (Sprite)comp; return sprite != null && sprite.MustBeUpdated; }).ToList();
         }
 
         protected override void Update(GameTime gameTime)
         {
+            if (GameStatesAndActions.GameOver) Exit();
+
+            ActualCenterOfGameWorld = player.Position;
+
             camera.Follow(player);
             controller.Update(gameTime);
 

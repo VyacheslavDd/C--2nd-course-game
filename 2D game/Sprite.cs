@@ -14,6 +14,8 @@ public class Sprite : Component
 
     public SpriteEffects Effect { get; set; }
 
+    public bool MustBeUpdated { get; set; }
+
     public Rectangle Rectangle
     {
         get { return new Rectangle((int)Position.X, (int)Position.Y, (int)(texture.Width * Scale.X), (int)(texture.Height * Scale.Y)); }
@@ -24,12 +26,13 @@ public class Sprite : Component
         spriteBatch.Draw(texture, Position, Color.White);
     }
 
-    public Sprite(Texture2D texture, Vector2 position, Vector2 scale, SpriteEffects effect)
+    public Sprite(Texture2D texture, Vector2 position, Vector2 scale, SpriteEffects effect, bool mustBeUpdated=true)
     {
         this.texture = texture;
         Position = position;
         Scale = scale;
         Effect = effect;
+        MustBeUpdated = mustBeUpdated;
     }
 
     public override void Update(GameTime gameTime)
