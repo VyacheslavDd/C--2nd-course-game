@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
 using System.Linq;
+using System.Transactions;
 
 namespace _2D_game;
 
@@ -14,6 +15,8 @@ public class MainPlayer : Sprite
     public float Speed { get; set; }
 
     private List<Component> objectsToDetectCollisionsWith;
+
+    private bool isTurnedLeft; 
 
     public MainPlayer(Texture2D texture, float speed, Vector2 initialPosition, Vector2 scale,
         Directions direction = Directions.Right) : base(texture, initialPosition, scale, SpriteEffects.None)
@@ -39,7 +42,8 @@ public class MainPlayer : Sprite
     public override void Update(GameTime gameTime)
     {
         UpdatePossibleMoves();
-        Move(Keyboard.GetState(), (float)gameTime.ElapsedGameTime.TotalSeconds);
+        UpdateDirection();
+        UpdateEffect();
     }
 
     public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
@@ -76,22 +80,25 @@ public class MainPlayer : Sprite
         possibleMoves[Directions.Down] = true;
     }
 
-    private void Move(KeyboardState key, float elapsedSeconds)
+    public void Move(Directions direction, float elapsedSeconds)
     {
-        if (!IsMovementCaused(key)) return;
 
-        var previousPos = Position;
         var updatedTemp = Position;
 
-        if (key.IsKeyDown(Keys.A) && possibleMoves[Directions.Left]) updatedTemp.X -= Speed * elapsedSeconds;
-        if (key.IsKeyDown(Keys.D) && possibleMoves[Directions.Right]) updatedTemp.X += Speed * elapsedSeconds;
-        if (key.IsKeyDown(Keys.W) && possibleMoves[Directions.Up]) updatedTemp.Y -= Speed * elapsedSeconds;
-        if (key.IsKeyDown(Keys.S) && possibleMoves[Directions.Down]) updatedTemp.Y += Speed * elapsedSeconds;
+        if (direction == Directions.Left && possibleMoves[Directions.Left])
+        {
+            isTurnedLeft = true;
+            updatedTemp.X -= Speed * elapsedSeconds;
+        }
+        if (direction == Directions.Right && possibleMoves[Directions.Right])
+        {
+            isTurnedLeft = false;
+            updatedTemp.X += Speed * elapsedSeconds;
+        }
+        if (direction == Directions.Up && possibleMoves[Directions.Up]) updatedTemp.Y -= Speed * elapsedSeconds;
+        if (direction == Directions.Down && possibleMoves[Directions.Down]) updatedTemp.Y += Speed * elapsedSeconds;
 
         Position = updatedTemp;
-
-        UpdateDirection(previousPos);
-        UpdateEffect();
     }
 
     private void UpdateEffect()
@@ -100,15 +107,9 @@ public class MainPlayer : Sprite
         else Effect = SpriteEffects.FlipHorizontally;
     }
 
-    private bool IsMovementCaused(KeyboardState key)
+    private void UpdateDirection()
     {
-        return key.IsKeyDown(Keys.A) || key.IsKeyDown(Keys.D) ||
-            key.IsKeyDown(Keys.W) || key.IsKeyDown(Keys.S);
-    }
-
-    private void UpdateDirection(Vector2 previousPos)
-    {
-        if (previousPos.X <= Position.X) currentDirection = Directions.Right;
+        if (!isTurnedLeft) currentDirection = Directions.Right;
         else currentDirection = Directions.Left;
     }
 }

@@ -34,10 +34,13 @@ namespace _2D_game
 
         private MainCamera camera;
         private MainPlayer player;
+        private Controller controller;
 
         private List<Component> colliders;
         private List<Component> pupilsAndTeachers;
         private List<Component> gameComponents;
+
+        private List<Component> gameComponentsToUpdate;
 
         public USE_Game()
         {
@@ -48,8 +51,8 @@ namespace _2D_game
 
         protected override void Initialize()
         {
-            _graphics.PreferredBackBufferWidth = 700;
-            _graphics.PreferredBackBufferHeight = 450;
+            _graphics.PreferredBackBufferWidth = 1280;
+            _graphics.PreferredBackBufferHeight = 720;
             _graphics.ApplyChanges();
 
             ScreenWidth = _graphics.PreferredBackBufferWidth;
@@ -90,6 +93,7 @@ namespace _2D_game
         {
             camera = new MainCamera();
             player = new MainPlayer(mainCharacterSprite, 200f, new Vector2(160, 40), new Vector2(0.7f, 0.7f));
+            controller = new Controller(player);
 
             CreateAdditionalCharacters();
         }
@@ -180,20 +184,24 @@ namespace _2D_game
 
             AddGameComponents();
 
-            gameComponents.AddRange(colliders);
             gameComponents.AddRange(pupilsAndTeachers);
 
             player.LoadColliders(colliders.Union(pupilsAndTeachers).ToList());
+
+            gameComponentsToUpdate = gameComponents
+                .Where(comp => comp.GetType() != typeof(Sprite))
+                .ToList();
         }
 
         protected override void Update(GameTime gameTime)
         {
+            camera.Follow(player);
+            controller.Update(gameTime);
+
             if (Keyboard.GetState().IsKeyDown(Keys.Escape)) Exit();
 
-            foreach (var component in gameComponents)
+            foreach (var component in gameComponentsToUpdate)
                 component.Update(gameTime);
-
-            camera.Follow(player);
 
             base.Update(gameTime);
         }
