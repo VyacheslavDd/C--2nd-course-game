@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "_2D_Game.Tests": {
+      "commandName": "Project",
+      "nativeDebugging": false
+    }
+  }
+}
